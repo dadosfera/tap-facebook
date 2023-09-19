@@ -869,9 +869,15 @@ def load_shared_schema_refs():
 
     return shared_schema_refs
 
+
+@retry_pattern(backoff.expo, (FacebookRequestError), max_tries=7, factor=5)
+def get_ad_accounts_with_retry(user):
+    return user.get_ad_accounts()
+
 def do_discover():
     LOGGER.info('Loading schemas')
     json.dump(discover_schemas(), sys.stdout, indent=4)
+
 
 
 def main_impl():
@@ -896,7 +902,7 @@ def main_impl():
         API = FacebookAdsApi.init(access_token=access_token, timeout=request_timeout)
         user = fb_user.User(fbid='me')
 
-        accounts = user.get_ad_accounts()
+        accounts = get_ad_accounts_with_retry(user=user)
         account = None
         for acc in accounts:
             if acc['account_id'] == account_id:
