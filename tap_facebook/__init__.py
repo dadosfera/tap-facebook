@@ -654,7 +654,7 @@ class AdsInsights(Stream):
             buffered_start_date = buffered_start_date.add(days=1)
 
     @staticmethod
-    @retry_pattern(backoff.constant, FacebookRequestError, max_tries=5, interval=1)
+    @retry_pattern(backoff.expo, FacebookRequestError, max_tries=7, factor=5)
     def __api_get_with_retry(job):
         job = job.api_get()
         return job
